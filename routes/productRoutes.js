@@ -20,6 +20,63 @@ router.post("/", async (req, res) => {
     }
 });
 
+
+// GET /api/products
+router.get("/", async (req, res) => {
+    try {
+        const {category,minPrice,maxPrice,sortBy,page = 1,limit = 10} = req.query;
+
+        //  Build filter object
+        const filter = {};
+
+        // Filter by category
+        if (category) {
+            filter.category = category;
+        }
+
+        // Filter by price range
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            filter.price = {};
+
+            if (minPrice !== undefined) {
+                filter.price.$gte = Number(minPrice);
+            }
+
+            if (maxPrice !== undefined) {
+                filter.price.$lte = Number(maxPrice);
+            }
+        }
+
+        // Sorting
+        let sort = {};
+
+        if (sortBy === "price_asc") {
+            sort.price = 1;
+        } else if (sortBy === "price_desc") {
+            sort.price = -1;
+        }
+
+        // Pagination
+        const currentPage = Math.max(1, Number(page));
+        const pageLimit = Math.min(100, Math.max(1, Number(limit)));
+        const skip = (currentPage - 1) * pageLimit;
+
+        // Get products from MongoDB
+        const products = await Product.find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(pageLimit);
+
+        // Send response
+        res.status(200).json(products);
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Error retrieving products",
+            error: error.message
+        });
+    }
+});
 // GET /api/products/:id
 router.get("/:id", async (req, res) => {
     try {
