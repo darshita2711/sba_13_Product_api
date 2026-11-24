@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/connection.js";
+import productRoutes from "./routes/productRoutes.js"
 
 
 dotenv.config();
@@ -11,6 +12,9 @@ app.use(express.json());
 
 // Database connection
 connectDB();
+
+// Register product routes
+app.use("/api/products", productRoutes);
 
 // Home route
 app.get("/", (req, res) => {
